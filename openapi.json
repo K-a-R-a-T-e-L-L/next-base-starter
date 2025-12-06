@@ -1,0 +1,218 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/todos": {
+      "post": {
+        "operationId": "createTodo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTodoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Задача {title} создана"
+          }
+        },
+        "summary": "Создать новую задачу",
+        "tags": ["Todos"]
+      },
+      "get": {
+        "operationId": "getListTodos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Todo"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Получить список задач",
+        "tags": ["Todos"]
+      }
+    },
+    "/todos/{id}": {
+      "get": {
+        "operationId": "getTodoById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Получить задачу по id",
+        "tags": ["Todos"]
+      },
+      "patch": {
+        "operationId": "updateTodoById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTodoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Обновить задачу по её id",
+        "tags": ["Todos"]
+      },
+      "delete": {
+        "operationId": "deleteTodoById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Задача №id успешно удалена"
+          }
+        },
+        "summary": "Удалить задачу по её id",
+        "tags": ["Todos"]
+      }
+    }
+  },
+  "info": {
+    "title": "Todos API",
+    "description": "API для управления задачами",
+    "version": "1",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "todos",
+      "description": ""
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "description": "Введите JWT токен"
+      }
+    },
+    "schemas": {
+      "CreateTodoDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Заголовок задачи",
+            "example": "Заголовок задачи",
+            "maxLength": 255,
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "Описание задачи",
+            "example": "Описание задачи",
+            "maxLength": 1000
+          },
+          "isCompleted": {
+            "type": "boolean",
+            "description": "Отметка выполнения задачи",
+            "example": true
+          }
+        },
+        "required": ["title", "description", "isCompleted"]
+      },
+      "Todo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Уникальный ID задачи",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "description": "Заголовок задачи",
+            "example": "Заголовок задачи",
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string",
+            "description": "Описание задачи",
+            "example": "Описание задачи",
+            "maxLength": 1000
+          },
+          "isCompleted": {
+            "type": "boolean",
+            "description": "Отметка выполнения задачи",
+            "example": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Дата добавления задачи",
+            "example": "2025-12-04T09:26:10.787Z"
+          }
+        },
+        "required": ["id", "title", "description", "isCompleted", "createdAt"]
+      }
+    }
+  }
+}
