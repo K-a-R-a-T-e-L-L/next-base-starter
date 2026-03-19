@@ -13,15 +13,9 @@ export type HttpMethod =
 export type RequestConfig<TData = unknown> = {
   url?: string;
   method?: HttpMethod;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
   data?: TData | FormData;
-  responseType?:
-    | "arraybuffer"
-    | "blob"
-    | "document"
-    | "json"
-    | "text"
-    | "stream";
+  responseType?: "arraybuffer" | "blob" | "document" | "json" | "text" | "stream";
   signal?: AbortSignal;
   headers?: HeadersInit;
 };
@@ -39,18 +33,22 @@ export type ResponseErrorConfig<TError = unknown> = {
   headers: Headers;
 };
 
-export default async function client<
-  TData = unknown,
-  TError = unknown,
-  TVariables = unknown
->(config: RequestConfig<TVariables>): Promise<ResponseConfig<TData>> {
+export type Client = <TData = unknown, TError = unknown, TVariables = unknown>(
+  config: RequestConfig<TVariables>,
+) => Promise<ResponseConfig<TData> & { __errorType?: TError }>;
+
+export default async function client<TData = unknown, TError = unknown, TVariables = unknown>(
+  config: RequestConfig<TVariables>,
+): Promise<ResponseConfig<TData> & { __errorType?: TError }> {
   const baseURL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
   const rawUrl = config.url ?? "";
-  const url = new URL(rawUrl, baseURL.endsWith("/") ? baseURL : baseURL + "/");
+  const url = new URL(rawUrl, baseURL.endsWith("/") ? baseURL : `${baseURL}/`);
 
   if (config.params) {
     Object.entries(config.params).forEach(([key, value]) => {
-      if (value === undefined || value === null) return;
+      if (value === undefined || value === null) {
+        return;
+      }
       url.searchParams.append(key, String(value));
     });
   }
@@ -61,26 +59,22 @@ export default async function client<
 
   if (config.data instanceof FormData) {
     body = config.data;
-  } else if (config.data !== null) {
+  } else if (config.data !== undefined && config.data !== null) {
     body = JSON.stringify(config.data);
-    if (headers.has("Content-Type")) {
+    if (!headers.has("Content-Type")) {
       headers.set("Content-Type", "application/json");
     }
   }
-  console.log("[client] →", config.method, url);
-
-  const method = config.method?.toUpperCase();
 
   const response = await fetch(url.toString(), {
-    method,
+    method: config.method?.toUpperCase(),
     body,
     signal: config.signal,
     headers,
   });
 
   const responseType = config.responseType ?? "json";
-
-  let data: any;
+  let data: unknown;
 
   if (responseType === "text") {
     data = await response.text();
@@ -89,16 +83,23 @@ export default async function client<
   } else if (responseType === "arraybuffer") {
     data = await response.arrayBuffer();
   } else {
-    data = response.json();
+    const text = await response.text();
+    data = text ? JSON.parse(text) : null;
   }
 
   if (!response.ok) {
-    throw new Error(`Request filed with status ${response.status}`);
+    const error = new Error(`Request failed with status ${response.status}`) as Error & {
+      payload?: TError;
+      status?: number;
+    };
+    error.payload = data as TError;
+    error.status = response.status;
+    throw error;
   }
 
   return {
-    data,
+    data: data as TData,
     status: response.status,
     statusText: response.statusText,
-  };
+  } as ResponseConfig<TData> & { __errorType?: TError };
 }

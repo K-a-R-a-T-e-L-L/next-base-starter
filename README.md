@@ -1,36 +1,184 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# Next Base Starter
 
-## Getting Started
+Russian version: [README.ru.md](./README.ru.md)
 
-First, run the development server:
+Production-ready Next.js starter template with Tailwind, SCSS, React Query, OpenAPI code generation via Kubb, and scalable layered architecture.
+
+## Why This Template
+
+This template is designed to bootstrap new web projects with practical defaults:
+
+- Next.js 16 App Router foundation
+- FSD-like layering: `app`, `processes`, `widgets`, `shared`
+- Tailwind + SCSS setup for fast UI iteration
+- React Query provider out of the box
+- Kubb-based typed API clients/hooks from OpenAPI
+- Example routes and reusable app shell
+
+## Tech Stack
+
+Core:
+
+- [Next.js 16](https://nextjs.org/) (App Router)
+- [React 19](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+
+UI and styles:
+
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- [Sass / SCSS](https://sass-lang.com/)
+
+Data and API:
+
+- [TanStack Query](https://tanstack.com/query/latest)
+- [Kubb](https://kubb.dev/) (`@kubb/core`, `@kubb/plugin-*`)
+
+Quality:
+
+- ESLint (flat config, Next.js rules)
+
+## Installation
+
+```bash
+npm install
+```
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and adjust values.
+
+```bash
+cp .env.example .env
+```
+
+Variables:
+
+- `NEXT_PUBLIC_API_URL`: runtime API base URL
+- `API_DOCS_URL`: remote OpenAPI endpoint (used when `OPENAPI_PATH=remote`)
+- `OPENAPI_PATH`: OpenAPI source for `kubb generate`
+
+`OPENAPI_PATH` options:
+
+- `./openapi.json` (default local schema)
+- `remote` (load schema from `API_DOCS_URL`)
+
+## Scripts
+
+- `npm run dev`: start local development server (`http://localhost:3000`)
+- `npm run build`: production build
+- `npm run start`: run production server
+- `npm run lint`: run ESLint
+- `npm run generate`: generate API clients/hooks from OpenAPI via Kubb
+
+## Quick Start
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Configure env:
+
+```bash
+cp .env.example .env
+```
+
+3. Generate API layer:
+
+```bash
+npm run generate
+```
+
+4. Start app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Architecture
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Main layers:
 
-## Learn More
+- `src/app`: route groups, layouts, top-level providers
+- `src/processes`: app-level providers and process orchestration
+- `src/widgets`: composed UI blocks and page views
+- `src/shared`: shared infrastructure (api/config/ui)
 
-To learn more about Next.js, take a look at the following resources:
+Current routes:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `/` -> Home page
+- `/about` -> About page
+- `/docs` -> Docs page
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## API Layer and Code Generation
 
-## Deploy on Vercel
+Manual HTTP client:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `src/shared/api/client.ts`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Generated artifacts:
+
+- `src/shared/api/.generated`
+
+Kubb config:
+
+- `kubb.config.ts`
+
+Generation flow:
+
+1. Resolve OpenAPI source (`OPENAPI_PATH` / `API_DOCS_URL`)
+2. Generate TypeScript models
+3. Generate typed fetch clients
+4. Generate React Query hooks
+
+## Styling Model
+
+- Tailwind utilities are enabled globally through `src/styles/globals.css`
+- Shared global styles and variables live in `src/styles/globals.scss`
+- Use Tailwind for component layout and SCSS for cross-cutting theming/variables
+
+## Recommended Workflow for New Features
+
+1. Update OpenAPI schema (`openapi.json` or remote docs)
+2. Run `npm run generate`
+3. Implement UI in `widgets`
+4. Move app-level orchestration to `processes` when needed
+5. Keep reusable abstractions in `shared`
+6. Validate with `npm run lint && npm run build`
+
+## Troubleshooting
+
+`Cannot find module '@/shared/api'`:
+
+- Run `npm run generate`
+- Verify generated files exist in `src/shared/api/.generated`
+
+Kubb import path issues:
+
+- Check `pluginClient.importPath` and `pluginReactQuery.client.importPath`
+- They should point to `@/shared/api/client`
+
+OpenAPI source errors:
+
+- Use `OPENAPI_PATH=./openapi.json` for offline/local generation
+- For remote mode set `OPENAPI_PATH=remote` and verify `API_DOCS_URL`
+
+Tailwind styles not applied:
+
+- Ensure `@import "tailwindcss";` remains in `src/styles/globals.css`
+
+## Production Notes
+
+Before production:
+
+- replace sample OpenAPI schema with real backend contract
+- add test stack (unit + e2e)
+- add CI checks (`lint`, `build`, tests)
+- add error monitoring (for example Sentry)
+
+## License
+
+Define your project license (for example MIT).
